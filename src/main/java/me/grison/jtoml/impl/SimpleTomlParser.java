@@ -19,7 +19,7 @@ public class SimpleTomlParser implements TomlParser {
     /** Encapsulate both a Matcher and a method to cast the retrieved value to the according type. */
     static abstract class Handler {
         // Keep them to avoid recreating it. Patterns are thread safe
-        static final Map<String, Pattern> PATTERNS = new HashMap<String, Pattern>();
+        static final Map<String, Pattern> PATTERNS = new HashMap<>();
         final Matcher matcher;
         public Handler(String regex) { this.matcher = getPattern(regex).matcher(""); }
         public Pattern getPattern(String regex) {
@@ -76,7 +76,7 @@ public class SimpleTomlParser implements TomlParser {
 
     @Override
     public Map<String, Object> parse(String tomlString) {
-        Map<String, Object> result = new LinkedHashMap<String, Object>();
+        Map<String, Object> result = new LinkedHashMap<>();
         Map<String, Object> context = result;
         tomlString = prepareMultiLineStrings(tomlString);
         tomlString = prepareArrays(tomlString);
@@ -104,7 +104,7 @@ public class SimpleTomlParser implements TomlParser {
      * @return the given String with arrays on one line
      */
     private String prepareArrays(String s) {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         String currentLine = "";
         for (String l: s.split("\n")) {
             currentLine = currentLine + l;
@@ -160,6 +160,7 @@ public class SimpleTomlParser implements TomlParser {
      * @param key the key
      * @return the newly created level
      */
+    @SuppressWarnings("unchecked")
     private Map<String, Object> createContextIfNeeded(Map<String, Object> context, String key) {
         Map<String, Object> visitor = context;
         for (String part: key.split("[.]")) {
@@ -194,12 +195,12 @@ public class SimpleTomlParser implements TomlParser {
         if (arrayLineMatcher.reset(line).matches()) {
             String key = arrayLineMatcher.group(2);
             String array = arrayLineMatcher.group(3);
-            List<Object> values = new ArrayList<Object>();
+            List<Object> values = new ArrayList<>();
             // find nested arrays
             if (array.matches(".*(?:\\]),.*")) {
                 for (String nested: array.split("(?:\\]),")) {
                     nested += "]";
-                    Object nestedArray[] = readObject(nested.trim());
+                    Object[] nestedArray = readObject(nested.trim());
                     if (nestedArray != null)
                         values.add(nestedArray[1]);
                 }
@@ -214,8 +215,8 @@ public class SimpleTomlParser implements TomlParser {
                 }
             }
             // Check all values have the same type
-            if (values != null && values.size() > 0) {
-                Set<Class<?>> types = new HashSet<Class<?>>();
+            if (!values.isEmpty()) {
+                Set<Class<?>> types = new HashSet<>();
                 for (Object o : values) {
                     types.add(o.getClass());
                 }

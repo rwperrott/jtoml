@@ -25,14 +25,14 @@ public class SpecificationsTest {
     @Test
     public void testDouble() {
         Toml toml = Toml.parse("foo = 3.141592653589793");
-        Assert.assertEquals(3.14159265, toml.getDouble("foo").doubleValue(), 0.00001d);
+        Assert.assertEquals(3.14159265, toml.getDouble("foo"), 0.00001d);
     }
 
     @Test
     public void testBoolean() {
         Toml toml = Toml.parse("foo = true\nbar = false");
-        Assert.assertEquals(true, toml.getBoolean("foo").booleanValue());
-        Assert.assertEquals(false, toml.getBoolean("bar").booleanValue());
+        Assert.assertEquals(true, toml.getBoolean("foo"));
+        Assert.assertEquals(false, toml.getBoolean("bar"));
     }
 
     @Test
@@ -99,6 +99,7 @@ public class SpecificationsTest {
         toml.getString("foo");
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testGetMap() {
         Toml toml = Toml.parse("[foo]\nbar = true\nbaz = false");
@@ -114,7 +115,7 @@ public class SpecificationsTest {
         Foo foo = toml.getAs("foo", Foo.class);
         Assert.assertEquals("a", foo.stringKey);
         Assert.assertEquals(Long.valueOf(42), foo.longKey);
-        Assert.assertEquals(Double.valueOf(13.37), foo.doubleKey, 0.00001d);
+        Assert.assertEquals(13.37, foo.doubleKey, 0.00001d);
         Assert.assertEquals(Boolean.TRUE, foo.booleanKey);
         Assert.assertEquals(Arrays.asList(1L, 2L, 3L), foo.listKey);
         Assert.assertEquals("Hello", foo.bar.bazz);

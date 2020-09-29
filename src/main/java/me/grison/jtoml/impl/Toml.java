@@ -3,7 +3,6 @@ package me.grison.jtoml.impl;
 import me.grison.jtoml.*;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.*;
@@ -22,18 +21,19 @@ import java.util.regex.Pattern;
  *
  * @author <a href="mailto:a.grison@gmail.com">$Author: Alexandre Grison$</a>
 */
+@SuppressWarnings({"unused", "unchecked"})
 public class Toml implements Parser, Getter {
     private static final Logger LOGGER = Logger.getLogger(Toml.class.getName());
     /** The default {@link TomlParser} loaded from {@link ServiceLoader}. Defaults to {@link SimpleTomlParser} if none found*/
     private static TomlParser defaultParser;
     /** The instance context map holding key/values parsed from a TOML String or File */
-    protected Map<String, Object> context = new LinkedHashMap<String, Object>();
+    protected Map<String, Object> context = new LinkedHashMap<>();
     /** A matcher to retrieve the path to a key. */
     protected final Matcher keyPathMatcher = Pattern.compile("((\\w+[.])+).*").matcher("");
     /** Current instance parser: default to `Toml.defaultParser` if none specified */
     protected TomlParser tomlParser;
     /** Current instance serializer */
-    private static TomlSerializer tomlSerializer = new SimpleTomlSerializer();
+    private static final TomlSerializer tomlSerializer = new SimpleTomlSerializer();
 
     /**
      * Retrieve a TomlParser on classpath.
@@ -74,7 +74,6 @@ public class Toml implements Parser, Getter {
      * @param tomlString the TOML String to load.
      * @param tomlParser the TOML parser to use
      * @return a TOML object instance
-     * @throws IOException
      */
     public static Toml parse(String tomlString, TomlParser tomlParser) {
         return new Toml(tomlParser).parseString(tomlString);
@@ -85,7 +84,7 @@ public class Toml implements Parser, Getter {
      *
      * @param file the TOML file to load
      * @return a TOML object instance
-     * @throws IOException
+     * @throws IOException .
      */
     public static Toml parse(File file) throws IOException {
         return parse(file, null);
@@ -97,9 +96,8 @@ public class Toml implements Parser, Getter {
      * @param file the TOML file to load
      * @param tomlParser the TOML parser to use
      * @return a TOML object instance
-     * @throws IOException
      */
-    public static Toml parse(File file, TomlParser tomlParser) throws IOException {
+    public static Toml parse(File file, TomlParser tomlParser) {
         return new Toml(tomlParser).parseFile(file);
     }
 
@@ -110,7 +108,7 @@ public class Toml implements Parser, Getter {
     }
 
 	@Override
-	public Toml parseFile(File file) throws FileNotFoundException {
+	public Toml parseFile(File file) {
         return parseString(Util.FileToString.read(file));
 	}
 
@@ -158,7 +156,7 @@ public class Toml implements Parser, Getter {
     /**
      * Find the correct level context.
      * findContext({"foo": {"bar": "hello"}}, "foo.bar")
-     * -> "hello"
+     * -&gt; "hello"
      *
      * @param context the context
      * @param key the key
@@ -176,70 +174,74 @@ public class Toml implements Parser, Getter {
     }
 
     @Override
-    public Object get(String key) {
+    public Object get(String key, Object defaultValue) {
         if (key == null || "".equals(key.trim())) {
             return context;
         } else if (key.contains(".")) {
             String keyPath = keyPath(key);
-            return findContext(context, keyPath).get(key.replace(keyPath + ".", ""));
+            Map<String, Object> map = findContext(context, keyPath);
+            return null == map ? defaultValue : map.getOrDefault(key.replace(keyPath + ".", ""), defaultValue);
         } else {
-            return context.get(key);
+            return context.getOrDefault(key, defaultValue);
         }
     }
 
     @Override
-    public String getString(String key) {
-        return get(key, String.class);
+    public String getString(String key, String defaultValue) {
+        return getType(key, String.class, defaultValue);
     }
 
     @Override
-    public Long getLong(String key) {
-        return get(key, Long.class);
+    public Long getLong(String key, Long defaultValue) {
+        return getType(key, Long.class, defaultValue);
     }
 
     @Override
-    public Double getDouble(String key) {
-        return get(key, Double.class);
+    public Double getDouble(String key, Double defaultValue) {
+        return getType(key, Double.class, defaultValue);
     }
 
     @Override
-    public Calendar getDate(String key) {
-        return get(key, Calendar.class);
+    public Calendar getDate(String key, Calendar defaultValue) {
+        return getType(key, Calendar.class, defaultValue);
     }
 
     @Override
-    public List<Object> getList(String key) {
-        return get(key, List.class);
+    public List<Object> getList(String key, List<Object> defaultValue) {
+        return getType(key, List.class, defaultValue);
     }
 
     @Override
-    public Map<String, Object> getMap(String key) {
-        return get(key, Map.class);
+    public Map<String, Object> getMap(String key, Map<String, Object> defaultValue) {
+        return getType(key, Map.class, defaultValue);
     }
 
     @Override
-    public Boolean getBoolean(String key) {
-        return get(key, Boolean.class);
+    public Boolean getBoolean(String key, Boolean defaultValue) {
+        return getType(key, Boolean.class, defaultValue);
     }
 
     /**
      * Get a new instance of the given Class filled with the value that can be found
      * in the current context at the given key.
      *
+     * @param <T> the resulting object type
      * @param key the key where the value is located
      * @param clazz the class of the resulting object
-     * @param <T> the resulting object type
      * @return the value whose key is the given parameter
      */
+    @SuppressWarnings("unchecked")
     @Override
     public <T> T getAs(String key, Class<T> clazz) {
         try {
-            T result = clazz.newInstance();
+            final T result = clazz.newInstance();
             for (Field f: clazz.getDeclaredFields()) {
                 Class<?> fieldType = f.getType();
                 String fieldName = (key == null || "".equals(key.trim())) ? f.getName() : key + "." + f.getName();
+                Object defaultFieldValue = Util.Reflection.getFieldValue(f, result);
                 Object fieldValue = Util.Reflection.isTomlSupportedType(fieldType) ? //
-                        get(fieldName, fieldType) : getAs(fieldName, fieldType);
+                        getType(fieldName, (Class<Object>)fieldType, defaultFieldValue) : // Cast stops type nagging
+                        getAs(fieldName, fieldType);
                 Util.Reflection.setFieldValue(f, result, fieldValue);
             }
             return result;
@@ -253,13 +255,15 @@ public class Toml implements Parser, Getter {
      * Get the value whose key is the given parameter from the context map and cast it to the given class.
      * <p>Returns null if the value is null.</p>
      *
+     * @param <T> the resulting object type
      * @param key the key to search the value for.
      * @param clazz the class of the resulting object
-     * @param <T> the resulting object type
+     * @param defaultValue a user or object provided default value
      * @return the value whose key is the given parameter, <code>null</code> if not found
      */
-    private <T> T get(String key, Class<T> clazz) {
-        Object value = get(key);
+    @SuppressWarnings("unchecked")
+    private <T> T getType(String key, Class<T> clazz, T defaultValue) {
+        Object value = get(key, defaultValue);
         if (value == null) {
             return null;
         } else if (clazz.isInstance(value)) {
@@ -328,9 +332,9 @@ public class Toml implements Parser, Getter {
      * @throws IllegalStateException if too much {@link TomlParser} are found on classpath.
      */
     private static void initDefaultParser() {
-        List<TomlParser> parsers = new ArrayList<TomlParser>();
-        Iterator<TomlParser> parserIterator = ServiceLoader.load(TomlParser.class).iterator();
-        while(parserIterator.hasNext()) parsers.add(parserIterator.next());
+        List<TomlParser> parsers = new ArrayList<>();
+        for (TomlParser value : ServiceLoader.load(TomlParser.class))
+            parsers.add(value);
         // check too much (built-in one always available + one additional is OK)
         if (parsers.size() > 2) {
             throw new IllegalStateException("Too much TomlParser found on classpath: " + parsers);

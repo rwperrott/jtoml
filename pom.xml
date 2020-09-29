@@ -12,7 +12,7 @@
 
     <groupId>me.grison</groupId>
     <artifactId>jtoml</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.0-HACK</version>
     <packaging>jar</packaging>
     <name>jtoml</name>
     <description>TOML for Java</description>
@@ -25,7 +25,7 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
-
+    <!--
     <scm>
         <connection>scm:git:git://github.com/agrion/jtoml.git</connection>
         <developerConnection>scm:git:git@github.com:agrison/jtoml.git</developerConnection>
@@ -49,7 +49,7 @@
             <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
-
+    -->
     <developers>
         <developer>
             <id>agrison</id>
@@ -60,8 +60,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>1.6</java.version>
-        <junit.version>4.11</junit.version>
+        <java.version>1.8</java.version>
+        <junit.version>4.13</junit.version>
     </properties>
 
     <dependencies>

@@ -71,7 +71,7 @@ public class ExampleTomlTest {
 		// ports = [ 8001, 8001, 8002 ]
 		assertEquals("192.168.1.1", toml.get("database.server"));
 		assertEquals(
-				createList(Long.valueOf(8001), Long.valueOf(8001), Long.valueOf(8002)),
+				createList(8001L, 8001L, 8002L),
                 toml.getList("database.ports"));
 	}
 
@@ -90,9 +90,9 @@ public class ExampleTomlTest {
 		// [database]
 		// enabled = true
 		// awesome = false # just because
-		assertEquals(Boolean.valueOf(true), toml.getBoolean("database.enabled"));
-		assertEquals(Boolean.valueOf(false),
-				toml.getBoolean("database.awesome"));
+		assertEquals(Boolean.TRUE, toml.getBoolean("database.enabled"));
+		assertEquals(Boolean.FALSE,
+					 toml.getBoolean("database.awesome"));
 	}
 
 	@Test
@@ -120,7 +120,7 @@ public class ExampleTomlTest {
 		// parsers support it
 		assertEquals(ExampleTomlTest.<Object> createList(
 				createList("gamma", "delta"),
-				createList(Long.valueOf(1), Long.valueOf(2))),
+				createList(1L, 2L)),
 				toml.getList("clients.data"));
 	}
 
@@ -143,7 +143,8 @@ public class ExampleTomlTest {
         Toml.serialize("something", "hello");
     }
 
+	@SafeVarargs
 	private static <T> List<T> createList(T... elements) {
-		return Arrays.<T> asList(elements);
+		return Arrays.asList(elements);
 	}
 }

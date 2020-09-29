@@ -8,6 +8,7 @@ import java.io.IOException;
  *
  * @author <a href="mailto:a.grison@gmail.com">$Author: Alexandre Grison$</a>
  */
+@SuppressWarnings("unused")
 public interface Parser {
     /**
      * Parse the given String as TOML.
@@ -18,7 +19,7 @@ public interface Parser {
     /**
      * Parse the given File as TOML.
      * @param file the file to be parsed.
-     * @throws IOException
+     * @throws IOException .
      */
     <T extends Parser & Getter> T parseFile(File file) throws IOException;
 }

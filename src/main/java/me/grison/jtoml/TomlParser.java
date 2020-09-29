@@ -18,5 +18,5 @@ public interface TomlParser {
      * @param tomlString the TOML String
      * @return a Map representing the given TOML structure.
      */
-    public Map<String, Object> parse(String tomlString);
+    Map<String, Object> parse(String tomlString);
 }

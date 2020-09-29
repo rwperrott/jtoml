@@ -2,7 +2,7 @@ package me.grison.jtoml;
 
 import java.io.*;
 import java.lang.reflect.Field;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -16,7 +16,7 @@ public class Util {
     /**
      * <p>Helper class for handling ISO 8601 strings of the following format:</p>
      * <p>"2008-03-01T13:00:00+01:00". It also supports parsing the "Z" timezone.</p>
-     * <p/>
+     * <p>
      * <p>Author: <a href="http://stackoverflow.com/users/1010931/wrygiel">wrigiel</a></p>
      * <p>Taken from: http://stackoverflow.com/questions/2201925/converting-iso8601-compliant-string-to-java-util-date</p>
      */
@@ -44,12 +44,12 @@ public class Util {
 
     /**
      * Toml String Utilities.
-     * <p/>
+     * <p>
      * Note: This is to avoid dependency on Apache commons for such limited features.
      */
     public static class TomlString {
-        private static Map<Character, Character> ESCAPE = new HashMap<Character, Character>();
-        private static Map<Character, Character> UNESCAPE = new HashMap<Character, Character>() {{
+        private static final Map<Character, Character> ESCAPE = new HashMap<>();
+        private static final Map<Character, Character> UNESCAPE = new HashMap<Character, Character>() {{
             put('0', '\u0000');
             put('t', '\t');
             put('n', '\n');
@@ -68,19 +68,19 @@ public class Util {
          * It will replace characters (<code>'\' + 't'</code>, <code>'\' + 'n'</code>, ...) to there equivalent (<code>'\t'</code>, <code>'\n'</code>).
          *
          * <ul>
-         *     <li><code>'\'</code> + <code>'0'</code> -> <code>'\0'</code> null character (0x00)</li>
-         *     <li><code>'\'</code> + <code>'t'</code> -> <code>'\t'</code> tab character (0x09)</li>
-         *     <li><code>'\'</code> + <code>'n'</code> -> <code>'\n'</code> newline character (0x0a)</li>
-         *     <li><code>'\'</code> + <code>'r'</code> -> <code>'\r'</code> carriage return character (0x0d)</li>
-         *     <li><code>'\'</code> + <code>'"'</code> -> <code>'"'</code> quote character (0x22)</li>
-         *     <li><code>'\'</code> + <code>'\'</code> -> <code>'\'</code> backslash character (0x5c)</li>
+         *     <li><code>'\'</code> + <code>'0'</code> -&gt; <code>'\0'</code> null character (0x00)</li>
+         *     <li><code>'\'</code> + <code>'t'</code> -&gt; <code>'\t'</code> tab character (0x09)</li>
+         *     <li><code>'\'</code> + <code>'n'</code> -&gt; <code>'\n'</code> newline character (0x0a)</li>
+         *     <li><code>'\'</code> + <code>'r'</code> -&gt; <code>'\r'</code> carriage return character (0x0d)</li>
+         *     <li><code>'\'</code> + <code>'"'</code> -&gt; <code>'"'</code> quote character (0x22)</li>
+         *     <li><code>'\'</code> + <code>'\'</code> -&gt; <code>'\'</code> backslash character (0x5c)</li>
          * </ul>
          *
          * @param input the String to unescape
          * @return the unescaped String
          */
         public static String unescape(String input) {
-            StringBuffer buffer = new StringBuffer(input.length());
+            StringBuilder buffer = new StringBuilder(input.length());
             for (int i = 0; i < input.length(); i++) {
                 char ch = input.charAt(i);
                 if (ch != '\\') {
@@ -93,8 +93,8 @@ public class Util {
                     if (UNESCAPE.containsKey(ch)) {
                         buffer.append(UNESCAPE.get(ch));
                     } else if (ch == 'u') {
-                        String unicodeHexValue = String.valueOf(input.charAt(++i)) + String.valueOf(input.charAt(++i)) +
-                                String.valueOf(input.charAt(++i)) + String.valueOf(input.charAt(++i));
+                        String unicodeHexValue = String.valueOf(input.charAt(++i)) + input.charAt(++i) +
+                                input.charAt(++i) + input.charAt(++i);
                         if (unicodeHexValue.matches("[0-9a-fA-F]{4}")) {
                             buffer.append((char)Integer.parseInt(unicodeHexValue, 16));
                         }
@@ -113,24 +113,24 @@ public class Util {
          * It will replace characters (<code>'\t'</code>, <code>'\n'</code>, ...) to there equivalent (<code>'\' + 't'</code>, <code>'\' + 'n'</code>).
          *
          * <ul>
-         *     <li><code>'\0'</code> null character (0x00) -> <code>'\'</code> + <code>'0'</code></li>
-         *     <li><code>'\t'</code> tab character (0x09) -> <code>'\'</code> + <code>'t'</code></li>
-         *     <li><code>'\n'</code> newline character (0x0a) -> <code>'\'</code> + <code>'n'</code></li>
-         *     <li><code>'\r'</code> carriage return character (0x0d) -> <code>'\'</code> + <code>'r'</code></li>
-         *     <li><code>'\"'</code> quote character (0x22) -> <code>'\'</code> + <code>'"'</code> </li>
-         *     <li><code>'\\'</code> backslash character (0x5c) -> <code>'\'</code> + <code>'\'</code></li>
+         *     <li><code>'\0'</code> null character (0x00) -&gt; <code>'\'</code> + <code>'0'</code></li>
+         *     <li><code>'\t'</code> tab character (0x09) -&gt; <code>'\'</code> + <code>'t'</code></li>
+         *     <li><code>'\n'</code> newline character (0x0a) -&gt; <code>'\'</code> + <code>'n'</code></li>
+         *     <li><code>'\r'</code> carriage return character (0x0d) -&gt; <code>'\'</code> + <code>'r'</code></li>
+         *     <li><code>'\"'</code> quote character (0x22) -&gt; <code>'\'</code> + <code>'"'</code> </li>
+         *     <li><code>'\\'</code> backslash character (0x5c) -&gt; <code>'\'</code> + <code>'\'</code></li>
          * </ul>
          *
          * @param input the String to escape
          * @return the escaped String
          */
         public static String escape(String input) {
-            StringBuffer buffer = new StringBuffer(input.length());
+            StringBuilder buffer = new StringBuilder(input.length());
             for (int i = 0; i < input.length(); i++) {
                 char ch = input.charAt(i);
                 if (ESCAPE.containsKey(ch)) {
                     buffer.append("\\").append(ESCAPE.get(ch));
-                } else if ((ch >= 0x00 && ch < 0x20 /* SPACE */) || (ch >= 0x7F /* DEL and above */)) {
+                } else if ((ch < 0x20 /* SPACE */) || (ch >= 0x7F /* DEL and above */)) {
                     buffer.append("\\u").append(Integer.toHexString(ch));
                 } else {
                     buffer.append(ch);
@@ -175,14 +175,13 @@ public class Util {
 
     /**
      * Utilities around File to String conversions.
-     * <p/>
+     * <p>
      * Note: This is to avoid dependency on Apache commons for such limited features.
      */
     public static class FileToString {
-        public static String read(File file)
-                throws FileNotFoundException {
+        public static String read(File file) {
             try {
-                BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF8"));
+                BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8));
 
                 String str;
                 StringBuilder b = new StringBuilder();
@@ -203,7 +202,7 @@ public class Util {
      */
     public static class Reflection {
         /** List of types supported Natively by TOML + Map */
-        static final Set<Class<?>> TOML_SUPPORTED = new HashSet<Class<?>>(Arrays.asList(
+        static final Set<Class<?>> TOML_SUPPORTED = new HashSet<>(Arrays.asList(
                 int.class, Integer.class, //
                 long.class, Long.class, //
                 double.class, Double.class, //
@@ -231,7 +230,7 @@ public class Util {
          * @param field the field
          * @param object the object
          * @param value the value
-         * @throws IllegalAccessException
+         * @throws IllegalAccessException .
          */
         public static void setFieldValue(Field field, Object object, Object value) throws IllegalAccessException {
             boolean isAccessible = field.isAccessible();
@@ -245,7 +244,7 @@ public class Util {
          *
          * @param field the field
          * @param object the object
-         * @throws IllegalAccessException
+         * @throws IllegalAccessException .
          */
         public static Object getFieldValue(Field field, Object object) throws IllegalAccessException {
             boolean isAccessible = field.isAccessible();
@@ -290,10 +289,10 @@ public class Util {
             boolean o2Supported = Util.Reflection.isTomlSupportedTypeExceptMap(field2.getType());
             // if built-in types or both complex types, keep original ordering
             if ((o1Supported && o2Supported) || (!o1Supported && !o2Supported)) {
-                return Integer.valueOf(originalFields.indexOf(field1)).compareTo(originalFields.indexOf(field2));
+                return Integer.compare(originalFields.indexOf(field1), originalFields.indexOf(field2));
             } else { // put complex types at the end
                 return o1Supported ? -1 : 1;
             }
         }
-    };
+    }
 }

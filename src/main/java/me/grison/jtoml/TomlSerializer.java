@@ -12,6 +12,7 @@ public interface TomlSerializer {
      * @param object the Object to be serialized
      * @return the TOML String representing the given Object.
      */
+    @SuppressWarnings("unused")
     String serialize(Object object);
 
     /**
